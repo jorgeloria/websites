@@ -1,10 +1,10 @@
 # web-site-doc
 
 Two standalone, single-file Streamlit MVPs for the same fictional psychology
-practice ("Dra./Dr. Ana Morales"), each styled after a different reference site:
+practice ("Dra./Dr. Ana Morales"), each with its own visual style:
 
 - [app.py](app.py) — English content, styled after [who.int](https://www.who.int/) (navy/blue, squared-off cards).
-- [app_pani.py](app_pani.py) — Spanish content, styled after [pani.go.cr](https://pani.go.cr/) (rounded, colorful, playful).
+- [app_second.py](app_second.py) — Spanish content, a rounded, colorful, playful alternate style.
 
 They are independent and not imported by one another — treat edits to one as
 isolated from the other unless the user asks for both to change together.
@@ -15,7 +15,7 @@ isolated from the other unless the user asks for both to change together.
 .venv/bin/streamlit run app.py
 ```
 ```bash
-.venv/bin/streamlit run app_pani.py
+.venv/bin/streamlit run app_second.py
 ```
 
 Only `streamlit` (and its transitive deps: pandas, altair, pyarrow, etc.) is
@@ -31,7 +31,7 @@ Both files follow the same pattern, just with English/Spanish naming:
    `REPORTS`/`INFORMES`, `ARTICLES`/`ARTICULOS`) — plain Python data. This is
    where page copy lives; edit here, not in the HTML-building code below.
 2. **CSS block** (`CSS` f-string) — theme colors are defined as variables just
-   above it (`BLUE`/`NAVY`/... in app.py, `AZUL`/`CELESTE`/... in app_pani.py)
+   above it (`BLUE`/`NAVY`/... in app.py, `AZUL`/`CELESTE`/... in app_second.py)
    and interpolated into the stylesheet. Change the theme by changing those
    color constants, not by hand-editing hex codes throughout the CSS.
 3. **Page body** — built by calling the local `html()` helper with f-strings
@@ -46,6 +46,20 @@ Key conventions:
   via CSS; layout is a hand-built header/hero/sections/footer using `.wrap`
   as the max-width container, mimicking a normal marketing site rather than
   a typical Streamlit data-app layout.
+- Streamlit stacks every top-level `st.markdown()` call with a 16px flex gap
+  (`[data-testid="stVerticalBlock"]`), and `<body>` defaults to Streamlit's
+  dark theme background. Both files force `body`/`html`/`.stApp` to white
+  and zero out that gap scoped to the top-level section stack
+  (`div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"]`)
+  — otherwise it shows as a stray near-black band between every section. Keep
+  this rule if you add new top-level `html()`/`st.markdown()` calls; don't
+  zero the gap globally, since the contact form and `st.columns` rely on it
+  for native widget spacing.
+- Report/Article card thumbnails use an inline-SVG icon (plus a faint dot
+  texture) over the gradient background instead of a flat color block, so
+  they read as illustrated tiles rather than empty/"missing image" boxes.
+  Keep using inline SVG (not external image URLs) so thumbnails never depend
+  on network access to render.
 - The contact form is the only native Streamlit widget area. It validates
   name/email-contains-"@"/message client-side and shows `st.success`/
   `st.error`, but never actually sends anything — see the
@@ -60,7 +74,7 @@ Key conventions:
 
 - Dates in `ARTICLES`/`ARTICULOS` are hardcoded strings (e.g. "12 November
   2026") — there's no date logic, just literal text to edit.
-- app_pani.py includes a Costa Rican emergency number (911) and a
+- app_second.py includes a Costa Rican emergency number (911) and a
   crisis/emergency disclaimer in both the hero and contact sections; app.py
   has an equivalent but shorter disclaimer only in the contact section. Keep
   this safety disclaimer when editing either contact area.

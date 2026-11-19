@@ -57,8 +57,13 @@ CSS = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
 html, body, [class*="css"], .stApp {{ font-family: 'Noto Sans', Arial, sans-serif; color: {INK}; }}
+html, body, .stApp {{ background: #fff !important; }}
 #MainMenu, footer, header[data-testid="stHeader"] {{ display: none; }}
 .block-container {{ padding: 0 !important; max-width: 100% !important; }}
+/* Streamlit stacks each st.markdown() call with a 16px flex gap; our sections
+   already provide their own spacing, so the gap only shows as a stray band
+   of the page background between them (most visible at the very top). */
+div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {{ gap: 0 !important; }}
 .wrap {{ max-width: 1180px; margin: 0 auto; padding: 0 24px; }}
 html {{ scroll-behavior: smooth; }}
 a {{ color: {BLUE}; text-decoration: none; }}
@@ -111,10 +116,14 @@ section.alt {{ background: {GREY}; }}
 
 .card {{ background: #fff; border: 1px solid {LINE}; display: flex; flex-direction: column; height: 100%; }}
 .card:hover {{ border-color: {BLUE}; box-shadow: 0 2px 10px rgba(0,58,93,.12); }}
-.thumb {{ height: 150px; background: linear-gradient(135deg, {NAVY}, {BLUE}); position: relative; }}
+.thumb {{ height: 150px; background: linear-gradient(135deg, {NAVY}, {BLUE}); position: relative; overflow: hidden; }}
 .thumb.t2 {{ background: linear-gradient(135deg, #00669C, #5CC3EC); }}
 .thumb.t3 {{ background: linear-gradient(135deg, #0B2E4A, #2F8DBE); }}
-.thumb span {{ position: absolute; left: 16px; bottom: 12px; color: #fff; font-weight: 700; font-size: 26px; }}
+.thumb::before {{ content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,.22) 1.5px, transparent 1.5px);
+    background-size: 15px 15px; }}
+.thumb span {{ position: absolute; left: 16px; bottom: 12px; color: #fff; font-weight: 700; font-size: 26px; z-index: 1; }}
+.thumb svg {{ position: absolute; right: 14px; bottom: 10px; width: 56px; height: 56px; opacity: .32; }}
 .body {{ padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 8px; flex: 1; }}
 .meta {{ font-size: 13px; color: #555; }}
 .tag {{ color: {BLUE}; font-weight: 700; }}
@@ -149,6 +158,16 @@ div[data-testid="stFormSubmitButton"] button:hover {{ background: {NAVY}; color:
 @media (prefers-reduced-motion: reduce) {{ html {{ scroll-behavior: auto; }} }}
 </style>
 """
+
+
+# Lightweight inline icons for the card thumbnails, standing in for photography
+# without depending on the network to load any external images.
+ICON_REPORT = ('<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">'
+               '<path d="M6 2h9l3 3v17H6z"/><path d="M14 2v4h4"/>'
+               '<path d="M9 12h6M9 15.5h6M9 9h3"/></svg>')
+ICON_ARTICLE = ('<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">'
+                '<path d="M3 5c3-1.3 6-1.3 9 0v14c-3-1.3-6-1.3-9 0z"/>'
+                '<path d="M21 5c-3-1.3-6-1.3-9 0v14c3-1.3 6-1.3 9 0z"/></svg>')
 
 
 def html(s: str) -> None:
@@ -214,7 +233,7 @@ html(f"""
 thumbs = ["", "t2", "t3"]
 reports_html = "".join(
     f"""<article class="card">
-<div class="thumb {thumbs[i % 3]}"><span>{year}</span></div>
+<div class="thumb {thumbs[i % 3]}">{ICON_REPORT}<span>{year}</span></div>
 <div class="body"><div class="meta"><span class="tag">Report</span></div>
 <h3><a href="{url}">{title}</a></h3><p>{desc}</p>
 <a class="more" href="{url}">Download PDF</a></div></article>"""
@@ -230,7 +249,7 @@ html(f"""
 # Articles
 articles_html = "".join(
     f"""<article class="card">
-<div class="thumb {thumbs[i % 3]}"></div>
+<div class="thumb {thumbs[i % 3]}">{ICON_ARTICLE}</div>
 <div class="body"><div class="meta"><span class="tag">{cat}</span> · {date}</div>
 <h3><a href="{url}">{title}</a></h3><p>{desc}</p>
 <a class="more" href="{url}">Read article</a></div></article>"""

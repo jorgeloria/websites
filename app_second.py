@@ -1,6 +1,6 @@
 """
-Sitio de práctica psicológica: MVP en Streamlit con estilo inspirado en pani.go.cr.
-Ejecutar:  pip install streamlit  &&  streamlit run app_pani.py
+Sitio de práctica psicológica: MVP en Streamlit, segunda variante de estilo.
+Ejecutar:  pip install streamlit  &&  streamlit run app_second.py
 Editá los bloques PRACTICA / SERVICIOS / INFORMES / ARTICULOS para cambiar el contenido.
 """
 import streamlit as st
@@ -61,8 +61,13 @@ CSS = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
 html, body, [class*="css"], .stApp {{ font-family: 'Nunito', Arial, sans-serif; color: {TINTA}; }}
+html, body, .stApp {{ background: #fff !important; }}
 #MainMenu, footer, header[data-testid="stHeader"] {{ display: none; }}
 .block-container {{ padding: 0 !important; max-width: 100% !important; }}
+/* Streamlit stacks each st.markdown() call with a 16px flex gap; our sections
+   already provide their own spacing, so the gap only shows as a stray band
+   of the page background between them (most visible at the very top). */
+div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {{ gap: 0 !important; }}
 html {{ scroll-behavior: smooth; }}
 .wrap {{ max-width: 1180px; margin: 0 auto; padding: 0 24px; }}
 a {{ color: {AZUL}; text-decoration: none; }}
@@ -135,7 +140,11 @@ section.fondo {{ background: {FONDO}; }}
 .thumb.t2 {{ background: linear-gradient(135deg, {NARANJA}, {AMARILLO}); }}
 .thumb.t3 {{ background: linear-gradient(135deg, #3F8F2E, {VERDE}); }}
 .thumb.t4 {{ background: linear-gradient(135deg, #0A7FB8, #7FD0F0); }}
-.thumb span {{ position: absolute; left: 20px; bottom: 12px; color: #fff; font-weight: 900; font-size: 30px; }}
+.thumb::before {{ content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,.25) 1.5px, transparent 1.5px);
+    background-size: 15px 15px; }}
+.thumb span {{ position: absolute; left: 20px; bottom: 12px; color: #fff; font-weight: 900; font-size: 30px; z-index: 1; }}
+.thumb svg {{ position: absolute; right: 16px; bottom: 10px; width: 54px; height: 54px; opacity: .35; }}
 .body {{ padding: 20px 22px 24px; display: flex; flex-direction: column; gap: 8px; flex: 1; }}
 .meta {{ font-size: 13px; color: #5A6B7D; font-weight: 600; }}
 .tag {{ display: inline-block; background: {FONDO}; color: {AZUL}; font-weight: 800; padding: 3px 12px; border-radius: 999px; margin-right: 6px; }}
@@ -173,6 +182,16 @@ div[data-testid="stFormSubmitButton"] button:hover {{ background: #D9572A; color
 @media (prefers-reduced-motion: reduce) {{ html {{ scroll-behavior: auto; }} }}
 </style>
 """
+
+
+# Iconos livianos en línea para las miniaturas de las tarjetas, en lugar de
+# depender de la red para cargar imágenes externas.
+ICONO_INFORME = ('<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">'
+                  '<path d="M6 2h9l3 3v17H6z"/><path d="M14 2v4h4"/>'
+                  '<path d="M9 12h6M9 15.5h6M9 9h3"/></svg>')
+ICONO_ARTICULO = ('<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5">'
+                   '<path d="M3 5c3-1.3 6-1.3 9 0v14c-3-1.3-6-1.3-9 0z"/>'
+                   '<path d="M21 5c-3-1.3-6-1.3-9 0v14c3-1.3 6-1.3 9 0z"/></svg>')
 
 
 def html(s: str) -> None:
@@ -241,7 +260,7 @@ html(f"""
 # Informes
 fondos = ["", "t2", "t3", "t4"]
 informes_html = "".join(
-    f"""<article class="card"><div class="thumb {fondos[i % 4]}"><span>{anio}</span></div>
+    f"""<article class="card"><div class="thumb {fondos[i % 4]}">{ICONO_INFORME}<span>{anio}</span></div>
 <div class="body"><div class="meta"><span class="tag">Informe</span></div>
 <h3><a href="{url}">{titulo}</a></h3><p>{desc}</p>
 <a class="mas" href="{url}">Descargar PDF</a></div></article>"""
@@ -256,7 +275,7 @@ html(f"""
 
 # Artículos
 articulos_html = "".join(
-    f"""<article class="card"><div class="thumb {fondos[i % 4]}"></div>
+    f"""<article class="card"><div class="thumb {fondos[i % 4]}">{ICONO_ARTICULO}</div>
 <div class="body"><div class="meta"><span class="tag">{cat}</span>{fecha}</div>
 <h3><a href="{url}">{titulo}</a></h3><p>{desc}</p>
 <a class="mas" href="{url}">Leer artículo</a></div></article>"""
